@@ -201,9 +201,76 @@
 }
 
 /* Toast animation */
+@keyframes toast-slide-in {
+    from {
+        transform: translateX(-120%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toast-slide-out {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(-120%);
+        opacity: 0;
+    }
+}
+
+@keyframes toast-progress {
+    from {
+        width: 100%;
+    }
+    to {
+        width: 0%;
+    }
+}
+
+.toast {
+    transform: translateX(-120%);
+    opacity: 0;
+    border-left: 4px solid #16a34a;
+}
+
+.toast.toast-error {
+    border-left-color: #ef4444;
+}
+
+.toast.toast-success {
+    border-left-color: #16a34a;
+}
+
 .toast.show {
-    opacity: 1 !important;
-    transform: translate(-50%, 0) !important;
+    animation: toast-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.toast.toast-hiding {
+    animation: toast-slide-out 0.35s cubic-bezier(0.55, 0, 1, 0.45) forwards;
+}
+
+.toast-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.toast-progress-bar {
+    height: 3px;
+    background: #16a34a;
+    width: 100%;
+}
+
+.toast.toast-error .toast-progress-bar {
+    background: #ef4444;
+}
+
+.toast.show .toast-progress-bar {
+    animation: toast-progress 3s linear forwards;
 }
 
 /* Empty state visible */

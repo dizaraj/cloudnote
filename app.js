@@ -721,14 +721,57 @@ async function pullDataFromCloud() {
 }
 
 // Helpers
-function showToast(message, type) {
-    elements.toast.textContent = message;
-    elements.toast.className = `toast show ${type}`;
-    elements.toast.classList.remove('hidden');
+let toastTimeout = null;
+let toastHideTimeout = null;
 
-    setTimeout(() => {
-        elements.toast.classList.remove('show');
-        setTimeout(() => elements.toast.classList.add('hidden'), 300);
+function showToast(message, type) {
+    const toast = elements.toast;
+    const toastMessage = document.getElementById('toastMessage');
+    const toastIcon = document.getElementById('toastIcon');
+    const progressBar = toast.querySelector('.toast-progress-bar');
+
+    // Clear previous timers
+    if (toastTimeout) clearTimeout(toastTimeout);
+    if (toastHideTimeout) clearTimeout(toastHideTimeout);
+
+    // Reset classes
+    toast.classList.remove('show', 'toast-hiding', 'toast-error', 'toast-success');
+
+    // Set icon based on type
+    const icons = {
+        success: `<svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+        error: `<svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+        default: `<svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`
+    };
+    toastIcon.innerHTML = icons[type] || icons.default;
+
+    // Set type class
+    if (type === 'error') toast.classList.add('toast-error');
+    else if (type === 'success') toast.classList.add('toast-success');
+
+    // Set message
+    toastMessage.textContent = message;
+
+    // Reset progress bar animation
+    progressBar.style.animation = 'none';
+    progressBar.offsetHeight; // trigger reflow
+    progressBar.style.animation = '';
+
+    // Show toast
+    toast.classList.remove('hidden');
+    // Force reflow before adding show class for animation restart
+    toast.offsetHeight;
+    toast.classList.add('show');
+
+    // Auto hide after 3s
+    toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('toast-hiding');
+
+        toastHideTimeout = setTimeout(() => {
+            toast.classList.add('hidden');
+            toast.classList.remove('toast-hiding', 'toast-error', 'toast-success');
+        }, 350);
     }, 3000);
 }
 
