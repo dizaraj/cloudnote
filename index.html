@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudNote - Smart Cloud Notes</title>
+    <meta name="description" content="CloudNote - A premium note-taking app with cloud sync powered by Supabase.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { DEFAULT: '#16a34a', light: '#22c55e', dark: '#15803d', 50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0', 500: '#22c55e', 600: '#16a34a', 700: '#15803d', 800: '#166534', 900: '#14532d' },
+                        surface: { DEFAULT: '#ffffff', dark: '#292a2d' },
+                        card: { DEFAULT: '#ffffff', dark: '#2d2e30' },
+                    },
+                    boxShadow: {
+                        'keep': '0 1px 2px 0 rgba(60,64,67,.3), 0 2px 6px 2px rgba(60,64,67,.15)',
+                        'keep-hover': '0 1px 3px 0 rgba(60,64,67,.3), 0 4px 8px 3px rgba(60,64,67,.15)',
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body
+    class="font-sans bg-gray-50 dark:bg-[#202124] text-gray-900 dark:text-gray-100 h-screen flex flex-col overflow-hidden antialiased transition-colors duration-300">
+
+    <!-- Header -->
+    <header
+        class="h-16 flex items-center px-4 md:px-6 bg-white dark:bg-[#202124] border-b border-gray-200 dark:border-gray-700/60 z-50 shrink-0">
+        <div class="flex items-center gap-2.5 min-w-[180px]">
+            <svg class="w-7 h-7 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                    d="M17.5 19c2.485 0 4.5-2.015 4.5-4.5 0-2.318-1.754-4.228-3.97-4.47V10c0-3.314-2.686-6-6-6-2.43 0-4.53 1.455-5.545 3.53C6.34 7.513 6.173 7.5 6 7.5 3.239 7.5 1 9.739 1 12.5S3.239 17.5 6 17.5h11.5z">
+                </path>
+            </svg>
+            <span class="text-xl font-semibold text-primary tracking-tight">CloudNote</span>
+        </div>
+
+        <div class="flex-1 flex justify-center max-w-2xl mx-auto px-4">
+            <div
+                class="flex items-center w-full h-11 bg-gray-100 dark:bg-[#303134] rounded-lg border border-transparent focus-within:bg-white dark:focus-within:bg-[#202124] focus-within:border-primary/40 focus-within:shadow-md dark:focus-within:shadow-none transition-all duration-200 px-4 gap-3">
+                <svg class="w-5 h-5 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search notes..."
+                    class="flex-1 h-full bg-transparent outline-none text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-1">
+            <button id="syncBtn"
+                class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                title="Sync Notes">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10" />
+                    <polyline points="1 20 1 14 7 14" />
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                </svg>
+            </button>
+            <button id="themeToggleBtn"
+                class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                title="Toggle Theme">
+                <svg class="moon-icon w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+                <svg class="sun-icon hidden w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+            </button>
+            <button id="settingsBtnHeader"
+                class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                title="Settings">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- App Body -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
+        <nav
+            class="sidebar w-[260px] shrink-0 bg-white dark:bg-[#202124] border-r border-gray-200 dark:border-gray-700/60 pt-3 transition-all duration-300 overflow-hidden relative z-10">
+            <ul class="space-y-0.5 px-2">
+                <li id="navActive"
+                    class="nav-item active group flex items-center gap-4 px-5 h-12 rounded-full cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors [&.active]:bg-primary-50 dark:[&.active]:bg-primary-900/20 [&.active]:text-primary-700 dark:[&.active]:text-primary-light">
+                    <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    <span>Notes</span>
+                </li>
+                <li id="navArchived"
+                    class="nav-item group flex items-center gap-4 px-5 h-12 rounded-full cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors [&.active]:bg-primary-50 dark:[&.active]:bg-primary-900/20 [&.active]:text-primary-700 dark:[&.active]:text-primary-light">
+                    <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M21 8v13H3V8" />
+                        <rect x="1" y="3" width="22" height="5" />
+                        <line x1="10" y1="12" x2="14" y2="12" />
+                    </svg>
+                    <span>Archive</span>
+                </li>
+                <li id="navTrash"
+                    class="nav-item group flex items-center gap-4 px-5 h-12 rounded-full cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors [&.active]:bg-primary-50 dark:[&.active]:bg-primary-900/20 [&.active]:text-primary-700 dark:[&.active]:text-primary-light">
+                    <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    <span>Trash</span>
+                </li>
+                <li id="settingsBtn"
+                    class="nav-item group flex items-center gap-4 px-5 h-12 rounded-full cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors [&.active]:bg-primary-50 dark:[&.active]:bg-primary-900/20 [&.active]:text-primary-700 dark:[&.active]:text-primary-light">
+                    <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                    <span>Settings</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#202124] p-6 md:p-8 relative">
+            <!-- Offline Banner -->
+            <div id="offlineBanner"
+                class="hidden mb-4 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-lg text-sm text-amber-700 dark:text-amber-400">
+                ⚠️ Not connected to Supabase. Notes saving locally only. Go to settings to configure.
+            </div>
+
+            <!-- FAB -->
+            <div class="fixed bottom-24 right-8 flex flex-col items-end gap-3 z-40">
+                <div
+                    class="bg-white dark:bg-[#2d2e30] px-3 py-2 rounded-lg shadow-keep text-sm font-medium text-gray-600 dark:text-gray-300 opacity-0 group-hover:opacity-100 pointer-events-none select-none">
+                    Take a note</div>
+                <button id="fabCreateNote"
+                    class="w-14 h-14 bg-primary hover:bg-primary-dark rounded-2xl shadow-keep hover:shadow-keep-hover text-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95">
+                    <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden flex-col items-center justify-center pt-24">
+                <svg class="w-28 h-28 text-gray-300 dark:text-gray-600 mb-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="0.8">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+                <p class="text-gray-400 dark:text-gray-500 text-base">Notes you add appear here</p>
+            </div>
+
+            <!-- Notes Grid -->
+            <div id="notesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Notes injected by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Note Modal -->
+    <div id="editNoteModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <div
+            class="bg-white dark:bg-[#2d2e30] rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700/60 z-10 relative">
+            <input type="text" id="editNoteTitle" placeholder="Title"
+                class="w-full px-5 pt-5 pb-2 text-lg font-semibold bg-transparent outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500">
+            <textarea id="editNoteBody" placeholder="Take a note..."
+                class="w-full px-5 py-2 text-sm bg-transparent outline-none text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 resize-none flex-1 min-h-[120px]"></textarea>
+
+            <div class="px-5 py-3 border-t border-gray-100 dark:border-gray-700/40">
+                <div class="flex items-center justify-between mb-2">
+                    <span
+                        class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Links</span>
+                    <button id="editNoteAddUrl"
+                        class="px-3 py-1 text-xs font-medium text-primary bg-primary-50 dark:bg-primary-900/20 rounded-md hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors">+
+                        Add URL</button>
+                </div>
+                <div id="editNoteUrlsList" class="space-y-2">
+                    <!-- URL inputs injected -->
+                </div>
+            </div>
+
+            <div class="px-5 py-2 text-xs text-gray-400 dark:text-gray-500" id="editNoteMeta">
+                <!-- Sync status -->
+            </div>
+
+            <div class="flex items-center justify-between px-3 py-3 border-t border-gray-100 dark:border-gray-700/40">
+                <div class="flex items-center gap-1">
+                    <button id="btnArchive"
+                        class="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                        title="Archive">
+                        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="21 8 21 21 3 21 3 8" />
+                            <rect x="1" y="3" width="22" height="5" />
+                            <line x1="10" y1="12" x2="14" y2="12" />
+                        </svg>
+                    </button>
+                    <button id="btnDelete"
+                        class="w-9 h-9 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition-colors"
+                        title="Delete">
+                        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            <line x1="10" y1="11" x2="10" y2="17" />
+                            <line x1="14" y1="11" x2="14" y2="17" />
+                        </svg>
+                    </button>
+                </div>
+                <button id="btnSaveModal"
+                    class="px-4 py-2 text-sm font-medium text-primary hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">Close</button>
+            </div>
+        </div>
+        <div class="fixed inset-0 bg-black/50 dark:bg-black/70" id="editBackdrop"></div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <div
+            class="bg-white dark:bg-[#2d2e30] rounded-xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700/60 z-10 relative">
+            <div class="px-6 pt-6 pb-2">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Settings</h2>
+            </div>
+            <div class="px-6 py-4 space-y-4">
+                <div>
+                    <label for="supabaseUrl"
+                        class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Supabase URL</label>
+                    <input type="text" id="supabaseUrl" placeholder="https://xyzcompany.supabase.co"
+                        class="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-[#303134] text-gray-900 dark:text-gray-100 outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all">
+                </div>
+                <div>
+                    <label for="supabaseKey"
+                        class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">Supabase API Key
+                        (anon/public)</label>
+                    <input type="password" id="supabaseKey" placeholder="ey..."
+                        class="w-full px-3 py-2.5 text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-[#303134] text-gray-900 dark:text-gray-100 outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all">
+                </div>
+                <div class="pt-2">
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mb-2">Sync full data from server (replaces local
+                        cache):</p>
+                    <button id="btnPullData"
+                        class="w-full px-4 py-2.5 text-sm font-medium rounded-lg bg-amber-500 hover:bg-amber-600 text-white transition-colors">Pull
+                        Data from Cloud</button>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700/40">
+                <button id="btnCancelSettings"
+                    class="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors">Cancel</button>
+                <button id="btnSaveSettings"
+                    class="px-5 py-2 text-sm font-medium bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors shadow-sm">Save
+                    Settings</button>
+            </div>
+        </div>
+        <div class="fixed inset-0 bg-black/50 dark:bg-black/70" id="settingsBackdrop"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer
+        class="shrink-0 bg-white dark:bg-[#202124] border-t border-gray-200 dark:border-gray-700/60 px-6 py-3 flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-0.5 text-primary">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+            </div>
+            <a href="#" class="text-gray-400 dark:text-gray-500 hover:text-primary transition-colors font-medium"
+                target="_blank">Leave a Review</a>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="https://dizaraj.github.io/" target="_blank"
+                class="hover:text-primary transition-colors">Developer</a>
+            <a href="https://coff.ee/dizaraj" target="_blank" class="hover:text-primary transition-colors">Donate</a>
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="toast hidden fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg shadow-lg z-[300] transition-all duration-300 opacity-0 translate-y-2">
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

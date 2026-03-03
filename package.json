@@ -1,0 +1,17 @@
+{
+  "name": "cloudnote",
+  "version": "1.0.0",
+  "description": "CloudNote - A premium note-taking app with cloud sync",
+  "main": "app.js",
+  "scripts": {
+    "dev": "npx live-server --port=3000 --no-browser",
+    "start": "npx live-server --port=3000"
+  },
+  "keywords": [
+    "notes",
+    "cloud",
+    "supabase"
+  ],
+  "author": "",
+  "license": "ISC"
+}
