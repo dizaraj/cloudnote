@@ -258,30 +258,95 @@ function setupEventListeners() {
         });
     }
 
-    // Sync Note
+    // Sync Note (two-way: pull from cloud + push unsynced local notes)
     if (elements.syncBtn) {
         elements.syncBtn.addEventListener('click', async () => {
-            const isConfigured = !!(localStorage.getItem('supabaseUrl') && localStorage.getItem('supabaseKey'));
-            if (!isConfigured) {
+            const supabaseUrl = localStorage.getItem('supabaseUrl');
+            const supabaseKey = localStorage.getItem('supabaseKey');
+            if (!supabaseUrl || !supabaseKey) {
                 showToast('Configure Supabase settings to sync.', 'error');
                 return;
             }
 
-            let localNotesToSync = notes.filter(n => !n.synced);
-            if (localNotesToSync.length > 0) {
-                showToast(`Syncing ${localNotesToSync.length} notes...`, '');
-                let successCount = 0;
+            // Add spinning animation to sync button
+            elements.syncBtn.classList.add('spin-animation');
+            elements.syncBtn.disabled = true;
+            showToast('Syncing notes...', '');
+
+            try {
+                // --- STEP 1: Pull notes from cloud ---
+                let cleanUrl = supabaseUrl.replace(/^(https?:\/\/)?(db\.)?/, 'https://');
+                if (cleanUrl.endsWith('/')) cleanUrl = cleanUrl.slice(0, -1);
+
+                const res = await fetch(`${cleanUrl}/rest/v1/notes?select=*`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`
+                    }
+                });
+
+                let pulledCount = 0;
+                if (res.ok) {
+                    const cloudNotes = await res.json();
+                    // Merge cloud notes into local notes
+                    cloudNotes.forEach(dbNote => {
+                        const localId = dbNote.local_id || generateUUID();
+                        const existingIndex = notes.findIndex(n => n.id === localId);
+                        const cloudNote = {
+                            id: localId,
+                            title: dbNote.title || '',
+                            body: dbNote.body || '',
+                            urls: dbNote.urls || [],
+                            createdAt: Date.parse(dbNote.created_at) || Date.now(),
+                            updatedAt: Date.parse(dbNote.updated_at || dbNote.created_at) || Date.now(),
+                            synced: true,
+                            archived: dbNote.is_archived === true
+                        };
+
+                        if (existingIndex !== -1) {
+                            // Only overwrite if the local copy is already synced (no local changes)
+                            if (notes[existingIndex].synced) {
+                                notes[existingIndex] = cloudNote;
+                            }
+                        } else {
+                            // New note from cloud — add it locally
+                            notes.push(cloudNote);
+                            pulledCount++;
+                        }
+                    });
+                }
+
+                // --- STEP 2: Push unsynced local notes to cloud ---
+                let localNotesToSync = notes.filter(n => !n.synced);
+                let pushCount = 0;
                 for (let n of localNotesToSync) {
                     if (await syncToSupabase(n)) {
                         n.synced = true;
-                        successCount++;
+                        pushCount++;
                     }
                 }
-                if (successCount > 0) saveNotesLocal();
-                showToast(`Synced ${successCount} notes`, 'success');
+
+                // Save and render
+                notes.sort((a, b) => b.updatedAt - a.updatedAt);
+                saveNotesLocal();
                 renderNotes();
-            } else {
-                showToast('Up to date', 'success');
+
+                // Build status message
+                const parts = [];
+                if (pulledCount > 0) parts.push(`${pulledCount} pulled`);
+                if (pushCount > 0) parts.push(`${pushCount} pushed`);
+                if (parts.length > 0) {
+                    showToast(`Sync complete: ${parts.join(', ')}`, 'success');
+                } else {
+                    showToast('All notes are up to date', 'success');
+                }
+            } catch (err) {
+                console.error('Sync error:', err);
+                showToast('Sync failed. Check connection.', 'error');
+            } finally {
+                elements.syncBtn.classList.remove('spin-animation');
+                elements.syncBtn.disabled = false;
             }
         });
     }
@@ -426,8 +491,11 @@ async function saveEditModalAndClose() {
                 }
             }
             renderNotes();
+            closeEditModal();
+            showToast('Note created', 'success');
+        } else {
+            closeEditModal();
         }
-        closeEditModal();
         return;
     }
 
@@ -466,9 +534,11 @@ async function saveEditModalAndClose() {
         }
 
         renderNotes();
+        closeEditModal();
+        showToast('Note updated', 'success');
+    } else {
+        closeEditModal();
     }
-
-    closeEditModal();
 }
 
 function closeEditModal() {
